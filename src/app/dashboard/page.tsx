@@ -8,7 +8,7 @@ const dashBoard = async () => {
   if (!user) return redirect("/");
 
   return (
-    <div>
+    <div className="px-12 py-4">
       ログインしたユーザーのみ閲覧できます。
     </div>
   )

@@ -1,10 +1,8 @@
-'use client'
-
 import { register } from "@/action/user";
 import { getSession } from "@/lib/getSession";
 import { redirect } from "next/navigation";
 
-const RegisterForm: React.FC = async () => {
+const RegisterForm = async () => {
   const session = await getSession();
   const user = session?.user;
   if (user) redirect("/");

@@ -20,7 +20,6 @@ const Header = async () => {
         ) : (
           <>
             <Link href={'/dashboard'} className='hover:text-zinc-400 cursor-pointer'>DashBoard</Link>
-            <Link href={'/'} className='border-2 border-amber-500 rounded-md px-4 py-1 hover:text-zinc-400 cursor-pointer'>Logout</Link>
             <form
               action={async () => {
                 "use server";

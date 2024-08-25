@@ -1,11 +1,10 @@
-'use client'
-
 import { login } from "@/action/user";
-import { signIn } from "@/auth";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/getSession";
+import AuthButtons from "../../AuthButtons";
 
-const LoginForm: React.FC = async () => {
+
+const LoginForm = async () => {
   const session = await getSession();
   const user = session?.user;
   if (user) redirect("/");
@@ -33,36 +32,10 @@ const LoginForm: React.FC = async () => {
         </div>
         <button type="submit" className="w-full px-5 py-3 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm text-center">ログイン</button>
       </form>
-      <form
-        action={async () => {
-          "use server";
-          await signIn("github");
-        }}
-      >
-        <button
-          className=" relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
-          type="submit"
-        >
-          <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-            Github
-          </span>
-        </button>
-      </form>
-      <form
-        action={async () => {
-          "use server";
-          await signIn("google");
-        }}
-      >
-        <button
-          className=" relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
-          type="submit"
-        >
-          <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-            Google
-          </span>
-        </button>
-      </form>
+      {/* GitHubサインインボタン */}
+      <AuthButtons provider="github" label="Github" />
+      {/* Googleサインインボタン */}
+      <AuthButtons provider="google" label="Google" />
     </>
   );
 };
