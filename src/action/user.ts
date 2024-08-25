@@ -42,7 +42,7 @@ const register = async (formData: FormData) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) throw new Error("User already exists");
 
-  const hashedPassword = await hash(password, 12);
+  const hashedPassword = await hash(password, 10);
 
   await User.create({ email, password: hashedPassword, confirmPassword });
   console.log(`ユーザーの作成に成功しました🎉`);
