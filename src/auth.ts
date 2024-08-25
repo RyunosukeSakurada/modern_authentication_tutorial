@@ -1,6 +1,5 @@
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Github from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import connectDB from "@/lib/db";
 import { User } from "@/models/User";
@@ -8,11 +7,6 @@ import { compare } from "bcryptjs";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
-    Github({
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    }),
-
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -31,25 +25,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const password = credentials.password as string | undefined;
 
         if (!email || !password) {
-          throw new CredentialsSignin("Please provide both email & password");
+          throw new CredentialsSignin("メールアドレスとパスワードの両方を入力してください");
         }
 
         await connectDB();
 
         const user = await User.findOne({ email }).select("+password +role");
 
-        if (!user) {
-          throw new Error("Invalid email or password");
-        }
-
-        if (!user.password) {
-          throw new Error("Invalid email or password");
+        if (!user || !user.password) {
+          throw new Error("無効なメールアドレスもしくはパスワード");
         }
 
         const isMatched = await compare(password, user.password);
 
         if (!isMatched) {
-          throw new Error("Password did not matched");
+          throw new Error("パスワードが一致しませんでした");
         }
 
         const userData = {
@@ -89,7 +79,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return true;
           }
         } catch (error) {
-          throw new Error("Error while creating user");
+          throw new Error("ユーザー作成中にエラーが発生しました");
         }
       }
 

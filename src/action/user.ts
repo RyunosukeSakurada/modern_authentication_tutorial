@@ -4,7 +4,6 @@ import connectDB from "@/lib/db";
 import { User } from "@/models/User";
 import { redirect } from "next/navigation";
 import { hash } from "bcryptjs";
-import { CredentialsSignin } from "next-auth";
 import { signIn } from "@/auth";
 
 const login = async (formData: FormData) => {
@@ -12,15 +11,18 @@ const login = async (formData: FormData) => {
   const password = formData.get("password") as string;
 
   try {
-    await signIn("credentials", {
+    const result = await signIn("credentials", {
       redirect: false,
       callbackUrl: "/",
       email,
       password,
     });
+
+    if (result?.error) {
+      return result.error;
+    }
   } catch (error) {
-    const someError = error as CredentialsSignin;
-    return someError.cause;
+    return error;
   }
   redirect("/");
 };
@@ -44,7 +46,7 @@ const register = async (formData: FormData) => {
   const hashedPassword = await hash(password, 12);
 
   await User.create({ name, email, password: hashedPassword, confirmPassword });
-  console.log(`User created successfully 🥂`);
+  console.log(`ユーザーの作成に成功しました🎉`);
   redirect("/login");
 };
 
