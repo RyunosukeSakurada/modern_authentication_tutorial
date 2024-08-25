@@ -43,7 +43,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const userData = {
-          name: user.name,
           email: user.email,
           id: user._id,
         };
@@ -69,12 +68,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: async ({ user, account }) => {
       if (account?.provider === "google") {
         try {
-          const { email, name, image, id } = user;
+          const { email, id } = user;
           await connectDB();
           const alreadyUser = await User.findOne({ email });
 
           if (!alreadyUser) {
-            await User.create({ email, name, image, authProviderId: id });
+            await User.create({ email, authProviderId: id });
           } else {
             return true;
           }

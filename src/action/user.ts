@@ -28,13 +28,12 @@ const login = async (formData: FormData) => {
 };
 
 const register = async (formData: FormData) => {
-  const name = formData.get("name") as string;
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
 
-  if (!name || !email || !password  || !confirmPassword) {
-    throw new Error("Please fill all fields");
+  if (!email || !password  || !confirmPassword) {
+    throw new Error("すべての項目を入力してください");
   }
 
   await connectDB();
@@ -45,15 +44,9 @@ const register = async (formData: FormData) => {
 
   const hashedPassword = await hash(password, 12);
 
-  await User.create({ name, email, password: hashedPassword, confirmPassword });
+  await User.create({ email, password: hashedPassword, confirmPassword });
   console.log(`ユーザーの作成に成功しました🎉`);
   redirect("/login");
 };
 
-const fetchAllUsers = async () => {
-  await connectDB();
-  const users = await User.find({});
-  return users;
-};
-
-export { register, login, fetchAllUsers };
+export { register, login };
