@@ -10,6 +10,7 @@ const dashBoard = async () => {
   return (
     <div className="px-12 py-4">
       ログインしたユーザーのみ閲覧できます。
+      <p>メールアドレス: {user.email}</p>
     </div>
   )
 }
