@@ -32,8 +32,13 @@ const LoginForm = async () => {
         </div>
         <button type="submit" className="w-full px-5 py-3 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm text-center">ログイン</button>
       </form>
+      <div className="flex items-center justify-center w-full my-6">
+        <hr className="w-full border-gray-300" />
+        <span className="px-2 text-sm text-gray-500">OR</span>
+        <hr className="w-full border-gray-300" />
+      </div>
       {/* Googleサインインボタン */}
-      <AuthButtons provider="google" label="Google" />
+      <AuthButtons provider="google" label="Googleアカウントでログイン" />
     </>
   );
 };
