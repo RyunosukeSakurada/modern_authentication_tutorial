@@ -1,7 +1,7 @@
 import { login } from "@/action/user";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/getSession";
-import AuthButtons from "../../AuthButtons";
+import AuthButtons from "../../Buttons/AuthButtons";
 
 
 const LoginForm = async () => {

@@ -68,12 +68,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: async ({ user, account }) => {
       if (account?.provider === "google") {
         try {
-          const { email, id } = user;
+          const { email, id, image } = user;
           await connectDB();
           const alreadyUser = await User.findOne({ email });
 
           if (!alreadyUser) {
-            await User.create({ email, authProviderId: id });
+            await User.create({ email, authProviderId: id, image });
           } else {
             return true;
           }
