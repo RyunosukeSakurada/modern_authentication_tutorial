@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "./components/Header";
+import Header from "./_components/Header";
 import '@radix-ui/themes/styles.css';
 import { Theme } from '@radix-ui/themes';
 
