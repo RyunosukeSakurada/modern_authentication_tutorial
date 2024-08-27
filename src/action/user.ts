@@ -1,9 +1,9 @@
 'use server'
 
-import { User } from "@/models/User";
 import { redirect } from "next/navigation";
 import { hash } from "bcryptjs";
 import { signIn } from "@/auth";
+import { db } from "@/lib/db";
 
 const login = async (formData: FormData) => {
   const email = formData.get("email") as string;
@@ -35,12 +35,22 @@ const register = async (formData: FormData) => {
     throw new Error("すべての項目を入力してください");
   }
 
-  const existingUser = await User.findOne({ email });
-  if (existingUser) throw new Error("ユーザーはすでに存在しています。");
+  const existingUser = await db.user.findUnique({
+    where: { email }
+  });
+
+  if (existingUser) {
+    throw new Error("このメールアドレスはすでに利用されています。");
+  }
 
   const hashedPassword = await hash(password, 10);
 
-  await User.create({ email, password: hashedPassword, confirmPassword });
+  await db.user.create({
+    data: {
+      email,
+      password: hashedPassword,
+    },
+  });
   console.log(`ユーザーの作成に成功しました🎉`);
   redirect("/login");
 };

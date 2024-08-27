@@ -5,10 +5,9 @@ import Google from "next-auth/providers/google";
 import { db } from "@/lib/db";
 import { compare } from "bcryptjs";
 
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(db),
-  session: {strategy:'jwt'},
+  session: { strategy: 'jwt' },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -33,13 +32,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const user = await db.user.findUnique({
           where: { email },
+          select: {
+            id: true,
+            email: true,
+            password: true,
+          }
         });
 
-        if (!user || !db.user.password) {
+        if (!user || !user.password) {
           throw new Error("無効なメールアドレスもしくはパスワード");
         }
 
-        const isMatched = await compare(password, db.user.password);
+        const isMatched = await compare(password, user.password);
 
         if (!isMatched) {
           throw new Error("パスワードが一致しませんでした");
@@ -61,30 +65,71 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   callbacks: {
     async session({ session, token }) {
-      if (token?.sub && token?.role) {
+      if (token?.sub) {
         session.user.id = token.sub;
       }
       return session;
     },
 
-
     signIn: async ({ user, account }) => {
       if (account?.provider === "google") {
         try {
           const { email, id, image } = user;
-          const existingUser = await db.user.findUnique({ where: { email } });
 
-          if (!existingUser) {
+          if (!email) {
+            throw new Error("Googleアカウントのメールアドレスが見つかりませんでした");
+          }
+
+          const existingUser = await db.user.findUnique({
+            where: { email },
+            include: { accounts: true },
+          });
+
+          if (existingUser) {
+            // 既存のAccountを確認
+            const existingAccount = existingUser.accounts.find(
+              (acc) => acc.provider === account.provider && acc.providerAccountId === account.providerAccountId
+            );
+
+            if (!existingAccount) {
+              // 既存ユーザーに新しいプロバイダをリンク
+              await db.account.create({
+                data: {
+                  userId: existingUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  access_token: account.access_token,
+                  id_token: account.id_token,
+                  refresh_token: account.refresh_token,
+                  expires_at: account.expires_at,
+                },
+              });
+            }
+          } else {
+            // 新しいユーザーを作成
             await db.user.create({
               data: {
                 email,
                 authProviderId: id,
                 image,
+                accounts: {
+                  create: {
+                    type: account.type,
+                    provider: account.provider,
+                    providerAccountId: account.providerAccountId,
+                    access_token: account.access_token,
+                    id_token: account.id_token,
+                    refresh_token: account.refresh_token,
+                    expires_at: account.expires_at,
+                  },
+                },
               },
             });
           }
           return true;
         } catch (error) {
+          console.error("User creation error:", error);
           throw new Error("ユーザー作成中にエラーが発生しました");
         }
       }
@@ -95,5 +140,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return false;
       }
     },
+
   },
 });

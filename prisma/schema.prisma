@@ -14,9 +14,9 @@ model User {
   emailVerified DateTime?
   password      String?
   image         String?
+  authProviderId String?
   accounts      Account[]
   sessions      Session[]
-  // Optional for WebAuthn support
   Authenticator Authenticator[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
