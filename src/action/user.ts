@@ -1,6 +1,5 @@
 'use server'
 
-import connectDB from "@/lib/db";
 import { User } from "@/models/User";
 import { redirect } from "next/navigation";
 import { hash } from "bcryptjs";
@@ -36,11 +35,8 @@ const register = async (formData: FormData) => {
     throw new Error("すべての項目を入力してください");
   }
 
-  await connectDB();
-
-  // existing user
   const existingUser = await User.findOne({ email });
-  if (existingUser) throw new Error("User already exists");
+  if (existingUser) throw new Error("ユーザーはすでに存在しています。");
 
   const hashedPassword = await hash(password, 10);
 

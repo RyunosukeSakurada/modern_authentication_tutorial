@@ -1,11 +1,14 @@
+import { PrismaAdapter } from '@auth/prisma-adapter';
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import connectDB from "@/lib/db";
-import { User } from "@/models/User";
+import { db } from "@/lib/db";
 import { compare } from "bcryptjs";
 
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: PrismaAdapter(db),
+  session: {strategy:'jwt'},
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -28,15 +31,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new CredentialsSignin("メールアドレスとパスワードの両方を入力してください");
         }
 
-        await connectDB();
+        const user = await db.user.findUnique({
+          where: { email },
+        });
 
-        const user = await User.findOne({ email }).select("+password +role");
-
-        if (!user || !user.password) {
+        if (!user || !db.user.password) {
           throw new Error("無効なメールアドレスもしくはパスワード");
         }
 
-        const isMatched = await compare(password, user.password);
+        const isMatched = await compare(password, db.user.password);
 
         if (!isMatched) {
           throw new Error("パスワードが一致しませんでした");
@@ -44,7 +47,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const userData = {
           email: user.email,
-          id: user._id,
+          id: user.id,
         };
 
         return userData;
@@ -69,14 +72,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account?.provider === "google") {
         try {
           const { email, id, image } = user;
-          await connectDB();
-          const alreadyUser = await User.findOne({ email });
+          const existingUser = await db.user.findUnique({ where: { email } });
 
-          if (!alreadyUser) {
-            await User.create({ email, authProviderId: id, image });
-          } else {
-            return true;
+          if (!existingUser) {
+            await db.user.create({
+              data: {
+                email,
+                authProviderId: id,
+                image,
+              },
+            });
           }
+          return true;
         } catch (error) {
           throw new Error("ユーザー作成中にエラーが発生しました");
         }
