@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { hash } from "bcryptjs";
 import { signIn } from "@/auth";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/db";
 
 const login = async (formData: FormData) => {
   const email = formData.get("email") as string;
@@ -35,7 +35,7 @@ const register = async (formData: FormData) => {
     throw new Error("すべての項目を入力してください");
   }
 
-  const existingUser = await db.user.findUnique({
+  const existingUser = await prisma.user.findUnique({
     where: { email }
   });
 
@@ -45,7 +45,7 @@ const register = async (formData: FormData) => {
 
   const hashedPassword = await hash(password, 10);
 
-  await db.user.create({
+  await prisma.user.create({
     data: {
       email,
       password: hashedPassword,

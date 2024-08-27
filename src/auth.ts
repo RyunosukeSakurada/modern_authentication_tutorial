@@ -2,11 +2,11 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { compare } from "bcryptjs";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(db),
+  adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
   providers: [
     Google({
@@ -30,7 +30,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new CredentialsSignin("メールアドレスとパスワードの両方を入力してください");
         }
 
-        const user = await db.user.findUnique({
+        const user = await prisma.user.findUnique({
           where: { email },
           select: {
             id: true,
@@ -80,7 +80,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             throw new Error("Googleアカウントのメールアドレスが見つかりませんでした");
           }
 
-          const existingUser = await db.user.findUnique({
+          const existingUser = await prisma.user.findUnique({
             where: { email },
             include: { accounts: true },
           });
@@ -93,7 +93,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
             if (!existingAccount) {
               // 既存ユーザーに新しいプロバイダをリンク
-              await db.account.create({
+              await prisma.account.create({
                 data: {
                   userId: existingUser.id,
                   type: account.type,
@@ -108,7 +108,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
           } else {
             // 新しいユーザーを作成
-            await db.user.create({
+            await prisma.user.create({
               data: {
                 email,
                 authProviderId: id,
